@@ -7,26 +7,47 @@ const token =
 const hmacSecret = "Wm1kR2JHUXlZV0ZqYUdGelpTNWpiMjB3TURJeE1URT0=";
 const maxDate = new Date("8/24/2026").getTime();
 
-const emailTo = "annasargsyan527.527@gmail.com";
 const mailer = createTransport({
   service: "gmail",
   auth: {
-    user: emailTo,
+    user: "annasargsyan527.527@gmail.com",
     pass: "sqhh uttn vqqq dams",
   },
 });
 
 const ntfyTopic = "slotseeker-anna";
 
-async function sendEmail(subject: string, text: string) {
+interface Check {
+  name: string;
+  branchId: string;
+  serviceId: string;
+  emailTo: string;
+}
+
+const checks: Check[] = [
+  {
+    name: "Road Exam (Gorcnakan) - Yerevan",
+    branchId: "2036",
+    serviceId: "300692",
+    emailTo: "annasargsyan527.527@gmail.com, armansargsyan1249@gmail.com",
+  },
+  {
+    name: "Road Exam (Tesakan) - Yerevan",
+    branchId: "2036",
+    serviceId: "300691",
+    emailTo: "annasargsyan527.527@gmail.com, armansargsyan1249@gmail.com",
+  },
+];
+
+async function sendEmail(to: string, subject: string, text: string) {
   try {
     await mailer.sendMail({
-      from: emailTo,
-      to: emailTo,
+      from: "annasargsyan527.527@gmail.com",
+      to,
       subject,
       text,
     });
-    console.log("Email sent!");
+    console.log(`Email sent to ${to}!`);
   } catch (err) {
     console.error("Failed to send email:", err);
   }
@@ -59,37 +80,30 @@ function signRequest(
   return createHmac("sha256", hmacSecret).update(message).digest("base64");
 }
 
-// Check only for these branches
-const Branches = {
-  Yerevan: "2036",
-  // Ararat: "2047",
-};
-
 interface TimeSlot {
-  value: string; // '15:30';
-  label: string; // '15:30';
+  value: string;
+  label: string;
 }
 
 interface DaySlots {
-  [key: string]: TimeSlot[]; // '2026-02-16T00:00:00': [TimeSlot, TimeSlot, ...]
+  [key: string]: TimeSlot[];
 }
 
-const sent = new Set<number>();
+const sent = new Set<string>();
 
-async function get(time: number, branchId: string) {
+async function get(time: number, branchId: string, serviceId: string) {
   const path = "/earlyone/api/AppointmentTimeSlot/GetNearestDay";
   const timestamp = Math.floor(Date.now() / 1000).toString();
   const params: Record<string, string> = {
-    Date: new Date(time).toISOString().split(".")[0],
+    Date: new Date(time).toISOString().split("T")[0] + "T00:00:00",
     AccountId: "0",
     BranchId: branchId,
     CompanyId: "379",
-    ServiceId: "300692",
+    ServiceId: serviceId,
   };
   const signature = signRequest("GET", path, timestamp, params);
 
   const myHeaders = new Headers();
-  myHeaders.append("Host", "e1-api.earlyone.com");
   myHeaders.append("Content-Type", "application/json");
   myHeaders.append("Cache-Control", "no-cache");
   myHeaders.append(
@@ -98,24 +112,22 @@ async function get(time: number, branchId: string) {
   );
   myHeaders.append("Accept", "*/*");
   myHeaders.append("Accept-Language", "en-GB,en-US;q=0.9,en;q=0.8");
-  myHeaders.append("Accept-Encoding", "gzip, deflate, br");
+  myHeaders.append("Accept-Encoding", "gzip, deflate");
   myHeaders.append("X-Culture", "en");
   myHeaders.append("X-Timestamp", timestamp);
   myHeaders.append("X-Signature", signature);
   myHeaders.append("Authorization", `Bearer ${token}`);
   myHeaders.append("AppVersion", "5.0.0(4)");
 
-  const requestOptions: RequestInit = {
-    method: "GET",
-    headers: myHeaders,
-    redirect: "follow",
-  };
-
   const endpoint = "https://e1-api.earlyone.com" + path;
   const url = new URL(endpoint);
   url.search = new URLSearchParams(params).toString();
 
-  const res = await fetch(url, requestOptions);
+  const res = await fetch(url, {
+    method: "GET",
+    headers: myHeaders,
+    redirect: "follow",
+  });
 
   if (!res.ok) {
     const msg = await res.text().catch(() => null);
@@ -157,63 +169,52 @@ function getNearestTime(daySlots: DaySlots): number | undefined {
     .sort((a, b) => a - b)
     .shift();
 
-  if (!nearestTimeSlot) {
-    return undefined;
-  }
-
   return nearestTimeSlot;
 }
 
 async function start() {
   let attempt = 0;
   while (true) {
-    for (const [branchName, branchId] of Object.entries(Branches)) {
+    for (const check of checks) {
       try {
         attempt++;
 
         process.stdout.write(
-          `\r- Attempt ${attempt}: Checking ${branchName}... ${" ".repeat(30)}`,
+          `\r- Attempt ${attempt}: Checking ${check.name}... ${" ".repeat(30)}`,
         );
         const now = Date.now();
-        const slots = await get(now, branchId);
+        const slots = await get(now, check.branchId, check.serviceId);
         const nearestTime = getNearestTime(slots);
-        const notified = nearestTime && sent.has(nearestTime);
+        const sentKey = `${check.name}-${nearestTime}`;
+        const notified = nearestTime && sent.has(sentKey);
 
         if (nearestTime && nearestTime < maxDate && !notified) {
-          console.log("-------------------------------");
-          console.log("-------------------------------");
-          console.log("-------------------------------");
-          console.log("-------------------------------");
-          console.log(
-            `Found ${branchName}: ${new Date(nearestTime).toLocaleString()}`,
-          );
-          console.log("-------------------------------");
-          console.log("-------------------------------");
-          console.log("-------------------------------");
-
           const dateStr = new Date(nearestTime).toLocaleString();
+          console.log(`\nFound ${check.name}: ${dateStr}`);
+
           await sendEmail(
-            `EarlyOne: Available date ${dateStr} in ${branchName}`,
-            `Available date: ${dateStr}\nBranch: ${branchName}`,
+            check.emailTo,
+            `EarlyOne: Available date ${dateStr} - ${check.name}`,
+            `Available date: ${dateStr}\n${check.name}`,
           );
-          await sendPush(`Available date in ${branchName}`, `Date: ${dateStr}`);
-          sent.add(nearestTime);
+          await sendPush(`${check.name}`, `Available date: ${dateStr}`);
+          sent.add(sentKey);
         } else {
           process.stdout.write(
-            `\r${branchName} nearest was ${
+            `\r${check.name} nearest: ${
               nearestTime ? new Date(nearestTime).toDateString() : "N/A"
-            }. ${" ".repeat(50)}\n`,
+            }. ${" ".repeat(30)}\n`,
           );
         }
       } catch (err) {
         console.error(err);
       }
 
-      await wait(5000); // 5 seconds between branches
+      await wait(5000);
     }
 
     process.stdout.write(`\rWaiting... ${" ".repeat(50)}`);
-    await wait(60000); // 1 minute between checks
+    await wait(30000);
   }
 }
 
