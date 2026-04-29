@@ -5,7 +5,6 @@ import { createTransport } from "nodemailer";
 const token =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJlNWNjNDYxYi0yNDM3LTQ2NzYtODFiOC1kYmRhZDU5OWYxMDA6QUZBOUFBRDE3MjhCNEI1NzlGMzVGRTRGMTQ3MjQ5MEMiLCJqdGkiOiJmYTkyM2EyOC01ZTU4LTQ3OWQtOTZiYi0zZDAzYTUzZWE1OWIiLCJuYmYiOjE3Nzc0NjQyNjcsImV4cCI6MTgwOTAwMDI2NywiaWF0IjoxNzc3NDY0MjY3fQ.g641LLUxW8xk2Mse-AfbdQ1cMqbRELl17OlkpW2jNrk";
 const hmacSecret = "Wm1kR2JHUXlZV0ZqYUdGelpTNWpiMjB3TURJeE1URT0=";
-const maxDate = new Date("8/24/2026").getTime();
 
 const mailer = createTransport({
   service: "gmail",
@@ -22,6 +21,7 @@ interface Check {
   branchId: string;
   serviceId: string;
   emailTo: string;
+  maxDate: number;
 }
 
 const checks: Check[] = [
@@ -30,12 +30,14 @@ const checks: Check[] = [
     branchId: "2036",
     serviceId: "300692",
     emailTo: "annasargsyan527.527@gmail.com, armansargsyan1249@gmail.com",
+    maxDate: new Date("8/21/2026").getTime(),
   },
   {
     name: "Road Exam (Tesakan) - Yerevan",
     branchId: "2036",
     serviceId: "300691",
     emailTo: "annasargsyan527.527@gmail.com, armansargsyan1249@gmail.com",
+    maxDate: new Date("6/16/2026").getTime(),
   },
 ];
 
@@ -188,7 +190,7 @@ async function start() {
         const sentKey = `${check.name}-${nearestTime}`;
         const notified = nearestTime && sent.has(sentKey);
 
-        if (nearestTime && nearestTime < maxDate && !notified) {
+        if (nearestTime && nearestTime < check.maxDate && !notified) {
           const dateStr = new Date(nearestTime).toLocaleString();
           console.log(`\nFound ${check.name}: ${dateStr}`);
 
