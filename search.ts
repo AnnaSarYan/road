@@ -43,14 +43,6 @@ const checks: Check[] = [
     forwardTo: ["hasmikaleksanyan000@gmail.com"],
     maxDate: new Date("6/4/2026").getTime(),
   },
-  {
-    name: "Road Exam (Tesakan) - Vanadzor",
-    branchId: "2043",
-    serviceId: "300691",
-    emailTo: "annasargsyan527.527@gmail.com",
-    forwardTo: ["armansargsyan1249@gmail.com", "emmabgaryan@gmail.com"],
-    maxDate: new Date("6/16/2026").getTime(),
-  },
 ];
 
 async function sendEmail(to: string, subject: string, text: string) {
@@ -213,7 +205,7 @@ async function start() {
         const sentKey = `${check.name}-${nearestTime}`;
         const notified = nearestTime && sent.has(sentKey);
 
-        if (nearestTime && nearestTime < check.maxDate && !notified) {
+        if (nearestTime && nearestTime > now && nearestTime < check.maxDate && !notified) {
           const dateStr = new Date(nearestTime).toLocaleString();
           console.log(`\nFound ${check.name}: ${dateStr}`);
 
