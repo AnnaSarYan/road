@@ -14,6 +14,7 @@ interface Check {
   branchId: string;
   serviceId: string;
   emailTo: string;
+  forwardTo: string[];
   maxDate: number;
 }
 
@@ -22,8 +23,8 @@ const checks: Check[] = [
     name: "Road Exam (Gorcnakan) - Yerevan",
     branchId: "2036",
     serviceId: "300692",
-    emailTo:
-      "annasargsyan527.527@gmail.com, armansargsyan1249@gmail.com, asiryankarine10@gmail.com",
+    emailTo: "annasargsyan527.527@gmail.com",
+    forwardTo: ["armansargsyan1249@gmail.com", "asiryankarine10@gmail.com"],
     maxDate: new Date("8/21/2026").getTime(),
   },
   {
@@ -31,6 +32,7 @@ const checks: Check[] = [
     branchId: "2036",
     serviceId: "300691",
     emailTo: "annasargsyan527.527@gmail.com",
+    forwardTo: ["armansargsyan1249@gmail.com"],
     maxDate: new Date("6/16/2026").getTime(),
   },
   {
@@ -38,6 +40,7 @@ const checks: Check[] = [
     branchId: "2046",
     serviceId: "300692",
     emailTo: "annasargsyan527.527@gmail.com",
+    forwardTo: ["hasmikaleksanyan000@gmail.com"],
     maxDate: new Date("6/4/2026").getTime(),
   },
   {
@@ -45,6 +48,7 @@ const checks: Check[] = [
     branchId: "2043",
     serviceId: "300691",
     emailTo: "annasargsyan527.527@gmail.com",
+    forwardTo: ["armansargsyan1249@gmail.com", "emmabgaryan@gmail.com"],
     maxDate: new Date("6/16/2026").getTime(),
   },
 ];
@@ -213,10 +217,13 @@ async function start() {
           const dateStr = new Date(nearestTime).toLocaleString();
           console.log(`\nFound ${check.name}: ${dateStr}`);
 
+          const forwardInfo = check.forwardTo.length
+            ? `\n\nForward to:\n${check.forwardTo.join("\n")}`
+            : "";
           await sendEmail(
             check.emailTo,
             `EarlyOne: Available date ${dateStr} - ${check.name}`,
-            `Available date: ${dateStr}\n${check.name}`,
+            `Available date: ${dateStr}\n${check.name}${forwardInfo}`,
           );
           await sendPush(`${check.name}`, `Available date: ${dateStr}`);
           sent.add(sentKey);
