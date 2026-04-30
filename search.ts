@@ -1,18 +1,11 @@
 import { setTimeout as wait } from "timers/promises";
 import { createHmac } from "crypto";
-import { createTransport } from "nodemailer";
 
 const token =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJlNWNjNDYxYi0yNDM3LTQ2NzYtODFiOC1kYmRhZDU5OWYxMDA6QUZBOUFBRDE3MjhCNEI1NzlGMzVGRTRGMTQ3MjQ5MEMiLCJqdGkiOiJmYTkyM2EyOC01ZTU4LTQ3OWQtOTZiYi0zZDAzYTUzZWE1OWIiLCJuYmYiOjE3Nzc0NjQyNjcsImV4cCI6MTgwOTAwMDI2NywiaWF0IjoxNzc3NDY0MjY3fQ.g641LLUxW8xk2Mse-AfbdQ1cMqbRELl17OlkpW2jNrk";
 const hmacSecret = "Wm1kR2JHUXlZV0ZqYUdGelpTNWpiMjB3TURJeE1URT0=";
 
-const mailer = createTransport({
-  service: "gmail",
-  auth: {
-    user: "annasargsyan527.527@gmail.com",
-    pass: "sqhh uttn vqqq dams",
-  },
-});
+const resendApiKey = "re_UxysjR9K_3VAiHA4yG4xrno3To6DcoTrt";
 
 const ntfyTopic = "slotseeker-anna";
 
@@ -58,12 +51,23 @@ const checks: Check[] = [
 
 async function sendEmail(to: string, subject: string, text: string) {
   try {
-    await mailer.sendMail({
-      from: "annasargsyan527.527@gmail.com",
-      to,
-      subject,
-      text,
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${resendApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: "SlotSeeker <onboarding@resend.dev>",
+        to: to.split(",").map((e) => e.trim()),
+        subject,
+        text,
+      }),
     });
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`Resend error ${res.status}: ${err}`);
+    }
     console.log(`Email sent to ${to}!`);
   } catch (err) {
     console.error("Failed to send email:", err);
