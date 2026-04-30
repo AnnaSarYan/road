@@ -29,7 +29,8 @@ const checks: Check[] = [
     name: "Road Exam (Gorcnakan) - Yerevan",
     branchId: "2036",
     serviceId: "300692",
-    emailTo: "annasargsyan527.527@gmail.com, armansargsyan1249@gmail.com",
+    emailTo:
+      "annasargsyan527.527@gmail.com, armansargsyan1249@gmail.com, marinasiryan14@gmail.com",
     maxDate: new Date("8/21/2026").getTime(),
   },
   {
@@ -37,6 +38,13 @@ const checks: Check[] = [
     branchId: "2036",
     serviceId: "300691",
     emailTo: "annasargsyan527.527@gmail.com, armansargsyan1249@gmail.com",
+    maxDate: new Date("6/16/2026").getTime(),
+  },
+  {
+    name: "Road Exam (Tesakan) - Vanadzor",
+    branchId: "2043",
+    serviceId: "300691",
+    emailTo: "armansargsyan1249@gmail.com, emmabgaryan@gmail.com",
     maxDate: new Date("6/16/2026").getTime(),
   },
 ];
