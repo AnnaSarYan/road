@@ -31,7 +31,7 @@ const checks: Check[] = [
     serviceId: "300692",
     emailTo:
       "annasargsyan527.527@gmail.com, armansargsyan1249@gmail.com, asiryankarine10@gmail.com",
-    maxDate: new Date("7/6/2026").getTime(),
+    maxDate: new Date("8/21/2026").getTime(),
   },
   {
     name: "Road Exam (Tesakan) - Yerevan",
