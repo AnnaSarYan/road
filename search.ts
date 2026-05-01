@@ -106,7 +106,16 @@ interface DaySlots {
   [key: string]: TimeSlot[];
 }
 
-const sent = new Set<string>();
+import { readFileSync, writeFileSync, existsSync } from "fs";
+
+const sentFile = "./sent.json";
+const sent = new Set<string>(
+  existsSync(sentFile) ? JSON.parse(readFileSync(sentFile, "utf-8")) : [],
+);
+
+function saveSent() {
+  writeFileSync(sentFile, JSON.stringify([...sent]));
+}
 
 async function get(time: number, branchId: string, serviceId: string) {
   const path = "/earlyone/api/AppointmentTimeSlot/GetNearestDay";
@@ -219,6 +228,7 @@ async function start() {
           );
           await sendPush(`${check.name}`, `Available date: ${dateStr}`);
           sent.add(sentKey);
+          saveSent();
         } else {
           process.stdout.write(
             `\r${check.name} nearest: ${
@@ -227,7 +237,7 @@ async function start() {
           );
         }
       } catch (err) {
-        console.error(err);
+        console.error(`Error in ${check.name}:`, err);
       }
 
       await wait(5000);
