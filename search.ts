@@ -1,5 +1,6 @@
 import { setTimeout as wait } from "timers/promises";
 import { createHmac } from "crypto";
+import { readFileSync, writeFileSync, existsSync } from "fs";
 
 const token =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJlNWNjNDYxYi0yNDM3LTQ2NzYtODFiOC1kYmRhZDU5OWYxMDA6QUZBOUFBRDE3MjhCNEI1NzlGMzVGRTRGMTQ3MjQ5MEMiLCJqdGkiOiJmYTkyM2EyOC01ZTU4LTQ3OWQtOTZiYi0zZDAzYTUzZWE1OWIiLCJuYmYiOjE3Nzc0NjQyNjcsImV4cCI6MTgwOTAwMDI2NywiaWF0IjoxNzc3NDY0MjY3fQ.g641LLUxW8xk2Mse-AfbdQ1cMqbRELl17OlkpW2jNrk";
@@ -34,14 +35,6 @@ const checks: Check[] = [
     emailTo: "annasargsyan527.527@gmail.com",
     forwardTo: ["armansargsyan1249@gmail.com"],
     maxDate: new Date("6/16/2026").getTime(),
-  },
-  {
-    name: "Road Exam (Gorcnakan) - Ashtarak",
-    branchId: "2046",
-    serviceId: "300692",
-    emailTo: "annasargsyan527.527@gmail.com",
-    forwardTo: ["hasmikaleksanyan000@gmail.com"],
-    maxDate: new Date("6/4/2026").getTime(),
   },
 ];
 
@@ -105,8 +98,6 @@ interface TimeSlot {
 interface DaySlots {
   [key: string]: TimeSlot[];
 }
-
-import { readFileSync, writeFileSync, existsSync } from "fs";
 
 const sentFile = "./sent.json";
 const sent = new Set<string>(
